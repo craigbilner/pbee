@@ -1,2 +1,1 @@
-# pbee
-PureScript by example exercises
+# PureScript by example exercises
