@@ -5,9 +5,8 @@ import Data.Maybe
 import Control.MonadZero (guard)
 import Data.Array (filter, (..), length)
 import Data.Array.Partial (head, tail)
-import Data.BooleanAlgebra (class BooleanAlgebra)
-import Data.Int (toNumber, fromNumber)
-import Math ((%), pow)
+import Data.Int (toNumber, fromNumber, pow)
+import Math ((%), sqrt)
 import Partial.Unsafe (unsafePartial)
 
 abs :: Int -> Int
@@ -32,10 +31,10 @@ countEvens xs = let
                   Just 0    -> 1 + others
                   otherwise -> others
 
-sqr :: Number -> Number
-sqr = flip pow 2.0
+sqr :: Int -> Int
+sqr = flip pow 2
 
-squareTheNumbers :: Array Number -> Array Number
+squareTheNumbers :: Array Int -> Array Int
 squareTheNumbers = map sqr
 
 isPositive :: Number -> Boolean
@@ -55,3 +54,27 @@ factors n = do
 
 isPrime :: Int -> Boolean
 isPrime = eq 1 <<< length <<< factors
+
+cartesianProduct :: forall a. Array a -> Array a -> Array (Array a)
+cartesianProduct xs ys = do
+  x <- xs
+  y <- ys
+  pure [x, y]
+
+safeSqrt :: Int -> Maybe Int
+safeSqrt n = fromNumber $ sqrt $ toNumber n
+
+triples :: Int -> Array (Array Int)
+triples n = do
+  a <- 1 .. (n - 1)
+  b <- (a + 1) .. (n - 1)
+  let a' = sqr a
+  let b' = sqr b
+  let c' = a' + b'
+  let mc = safeSqrt c'
+  guard $ case mc of
+            Just c -> c < n
+            _      -> false
+  case mc of
+    Just c -> pure [a, b, c]
+    _      -> pure []
