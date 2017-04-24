@@ -1,10 +1,9 @@
 module Data.AddressBook where
 
 import Prelude
-
 import Control.Plus (empty)
-import Data.List (List(..), filter, head)
-import Data.Maybe (Maybe)
+import Data.List (List(..), filter, head, findIndex, nubBy)
+import Data.Maybe (Maybe, isJust)
 
 type Address =
   { street :: String
@@ -49,3 +48,10 @@ findByStreet street = findEntry $ filterByStreet street
 
 printEntry :: Maybe Entry -> Maybe String
 printEntry entry = map showEntry entry
+
+hasPerson :: String -> String -> AddressBook -> Boolean
+hasPerson firstName lastName = isJust <<< (findIndex $ filterByName firstName lastName)
+
+removeDuplicates :: AddressBook -> AddressBook
+removeDuplicates = nubBy sameName
+  where sameName e1 e2 = e1.firstName == e2.firstName && e1.lastName == e2.lastName
