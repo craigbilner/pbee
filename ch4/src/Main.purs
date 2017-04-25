@@ -3,7 +3,7 @@ module Main where
 import Prelude
 import Data.Maybe
 import Control.MonadZero (guard)
-import Data.Array (filter, (..), length)
+import Data.Array (filter, (..), cons, length, concat)
 import Data.Array.Partial (head, tail)
 import Data.Int (toNumber, fromNumber, pow)
 import Math ((%), sqrt)
@@ -78,3 +78,18 @@ triples n = do
   case mc of
     Just c -> pure [a, b, c]
     _      -> pure []
+
+factorizations :: Int -> Array (Array Int)
+factorizations a =
+  if a <= 0
+  then []
+  else if a == 1
+  then [[1]]
+  else
+    cons [1, a] $ factorizations' a 1
+  where
+    factorizations' n cond = concat $ do
+      i <- (cond + 1) .. n
+      j <- (i + 1) .. n
+      guard $ i * j == n
+      pure $ cons [i, j] $ map (cons i) $ factorizations' j i
