@@ -5,7 +5,7 @@ import Data.Maybe
 import Control.MonadZero (guard)
 import Data.Array (filter, (..), cons, length, concat)
 import Data.Array.Partial (head, tail)
-import Data.Int (toNumber, fromNumber, pow)
+import Data.Int (toNumber, fromNumber, pow, floor)
 import Math ((%), sqrt)
 import Partial.Unsafe (unsafePartial)
 
@@ -89,7 +89,15 @@ factorizations a =
     cons [1, a] $ factorizations' a 1
   where
     factorizations' n cond = concat $ do
-      i <- (cond + 1) .. n
-      j <- (i + 1) .. n
-      guard $ i * j == n
+      let uBound = floor $ sqrt $ toNumber n
+
+      i <- if uBound >= (cond + 1)
+           then (cond + 1) .. uBound
+           else []
+
+      guard $ case fromNumber $ (toNumber n) / (toNumber i) of
+              Just f    -> f /= i
+              otherwise -> false
+
+      let j = n / i
       pure $ cons [i, j] $ map (cons i) $ factorizations' j i
