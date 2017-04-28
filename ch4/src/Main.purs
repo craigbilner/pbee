@@ -8,6 +8,7 @@ import Data.Array.Partial (head, tail)
 import Data.Int (toNumber, fromNumber, pow, floor)
 import Math ((%), sqrt)
 import Partial.Unsafe (unsafePartial)
+import Data.Foldable (foldl)
 
 abs :: Int -> Int
 abs n
@@ -101,3 +102,24 @@ factorizations a =
 
       let j = n / i
       pure $ cons [i, j] $ map (cons i) $ factorizations' j i
+
+allTrue :: Array Boolean -> Boolean
+allTrue [] = false
+allTrue xs = foldl (&&) true xs
+
+-- foldl (==) false xs -> returns true
+-- [false]
+-- [false, ...true]
+-- [false, true, false, false, ...]
+
+count :: forall a. (a -> Boolean) -> Array a -> Int
+count _ [] = 0
+count p xs = count' p 0 xs
+  where
+  count' _  acc []  = acc
+  count' p' acc xs' = if p $ unsafePartial head xs'
+                      then count' p' (acc + 1) $ unsafePartial tail xs'
+                      else count' p' acc $ unsafePartial tail xs'
+
+reverse :: forall a. Array a -> Array a
+reverse = foldl (\xs x -> cons x xs) []
