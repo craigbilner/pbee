@@ -2,10 +2,11 @@ module FileOperations where
 
 import Prelude
 
-import Data.Path (Path, ls, isDirectory, size)
+import Data.Path (Path, ls, isDirectory, size, root, filename)
 import Data.Array (concatMap, (:), filter)
 import Data.Traversable (foldr)
 import Data.Maybe
+import Control.MonadZero (guard)
 
 allFiles :: Path -> Array Path
 allFiles root = root : concatMap allFiles (ls root)
@@ -56,3 +57,16 @@ minMaxFileSize p = foldr minMax Nothing $ onlyFiles' p
                                                    Just s  -> if fileSize < s
                                                               then MinMaxFiles $ mm { smallest = file }
                                                               else MinMaxFiles mm
+isFile :: Path -> Boolean
+isFile = not <<< isDirectory
+
+whereIs :: String -> Maybe Path
+whereIs s = getDir $ findFile root
+  where
+    getDir [f] = Just f
+    getDir _   = Nothing
+    findFile path = do
+      child <- ls path
+      if isFile child && (filename child == s)
+        then [path]
+        else findFile child
