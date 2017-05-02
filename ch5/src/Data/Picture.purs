@@ -5,6 +5,7 @@ import Prelude
 import Data.Foldable (foldl)
 import Global as Global
 import Math as Math
+import Data.Maybe
 
 data Point = Point
   { x :: Number
@@ -143,11 +144,9 @@ bottomMost pa@(Point a) pb@(Point b)
   | otherwise = pb
 
 scaleShape :: Shape -> Shape
-scaleShape (Circle c r) =
-  Circle c $ r * 2.0
-scaleShape (Rectangle c w h) =
-  Rectangle c (w * 2.0) (h * 2.0)
-scaleShape (Line a b) =
+scaleShape (Circle c r)      = Circle c $ r * 2.0
+scaleShape (Rectangle c w h) = Rectangle c (w * 2.0) (h * 2.0)
+scaleShape (Line a b)        =
   let
     (Point { x: rx, y: ry }) = rightMost a b
     (Point { x: lx, y: ly }) = leftMost a b
@@ -165,5 +164,9 @@ scaleShape (Line a b) =
     if ly < ry
     then Line (Point { x: nlx, y: nby }) (Point { x: nrx, y: nty })
     else Line (Point { x: nlx, y: nty }) (Point { x: nrx, y: nby })
-scaleShape s =
+scaleShape s                 =
   s
+
+showText :: Shape -> Maybe String
+showText (Text _ text) = Just text
+showText _             = Nothing
