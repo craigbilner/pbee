@@ -34,3 +34,7 @@ sameCity :: forall r1 r2 r3 r4 a. Eq a
          -> { address :: { city :: a | r3 } | r4 }
          -> Boolean
 sameCity { address: { city: c1 } } { address: { city: c2 } } = c1 == c2
+
+fromSingleton :: forall a. a -> Array a -> a
+fromSingleton _       [x] = x
+fromSingleton default _   = default
