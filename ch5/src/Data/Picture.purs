@@ -21,6 +21,9 @@ data Shape
   | Line Point Point
   | Text Point String
 
+makeCircle :: forall r. { x :: Number, y :: Number | r } -> Number -> Shape
+makeCircle { x, y } radius = (Circle <<< Point $ { x, y }) radius
+
 showShape :: Shape -> String
 showShape (Circle c r) =
   "Circle [center: " <> showPoint c <> ", radius: " <> show r <> "]"
@@ -118,3 +121,49 @@ bounds = foldl combine emptyBounds
   where
   combine :: Bounds -> Shape -> Bounds
   combine b shape = shapeBounds shape \/ b
+
+leftMost :: Point -> Point -> Point
+leftMost pa@(Point a) pb@(Point b)
+  | a.x < b.x = pa
+  | otherwise = pb
+
+rightMost :: Point -> Point -> Point
+rightMost pa@(Point a) pb@(Point b)
+  | a.x > b.x = pa
+  | otherwise = pb
+
+topMost :: Point -> Point -> Point
+topMost pa@(Point a) pb@(Point b)
+  | a.y > b.y = pa
+  | otherwise = pb
+
+bottomMost :: Point -> Point -> Point
+bottomMost pa@(Point a) pb@(Point b)
+  | a.y < b.y = pa
+  | otherwise = pb
+
+scaleShape :: Shape -> Shape
+scaleShape (Circle c r) =
+  Circle c $ r * 2.0
+scaleShape (Rectangle c w h) =
+  Rectangle c (w * 2.0) (h * 2.0)
+scaleShape (Line a b) =
+  let
+    (Point { x: rx, y: ry }) = rightMost a b
+    (Point { x: lx, y: ly }) = leftMost a b
+    (Point { y: ty }) = topMost a b
+    (Point { y: by }) = bottomMost a b
+    xDiff = Math.abs (rx - lx)
+    yDiff = Math.abs (ty - by)
+    cx = lx + (xDiff / 2.0)
+    cy = by + (yDiff / 2.0)
+    nrx = cx + ((rx - cx) * 2.0)
+    nlx = cx - ((cx - lx) * 2.0)
+    nty = cy + ((ty - cy) * 2.0)
+    nby = cy - ((cy - by) * 2.0)
+  in
+    if ly < ry
+    then Line (Point { x: nlx, y: nby }) (Point { x: nrx, y: nty })
+    else Line (Point { x: nlx, y: nty }) (Point { x: nrx, y: nby })
+scaleShape s =
+  s
