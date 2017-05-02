@@ -1,10 +1,9 @@
 module Data.Picture where
 
 import Prelude
-
-import Data.Foldable (foldl)
+import Data.Foldable (foldl, foldr)
 import Global as Global
-import Math as Math
+import Math (pi, abs, pow)
 import Data.Maybe
 
 data Point = Point
@@ -21,9 +20,9 @@ data Shape
   | Rectangle Point Number Number
   | Line Point Point
   | Text Point String
+  | Clipped Picture
 
-makeCircle :: forall r. { x :: Number, y :: Number | r } -> Number -> Shape
-makeCircle { x, y } radius = (Circle <<< Point $ { x, y }) radius
+type Picture = Array Shape
 
 showShape :: Shape -> String
 showShape (Circle c r) =
@@ -34,8 +33,7 @@ showShape (Line start end) =
   "Line [start: " <> showPoint start <> ", end: " <> showPoint end <> "]"
 showShape (Text loc text) =
   "Text [location: " <> showPoint loc <> ", text: " <> show text <> "]"
-
-type Picture = Array Shape
+showShape (Clipped picture) = foldr (<>) "" $ map showShape picture
 
 showPicture :: Picture -> Array String
 showPicture = map showShape
@@ -69,10 +67,10 @@ shapeBounds (Rectangle (Point { x, y }) w h) = Bounds
   , right:  x + w / 2.0
   }
 shapeBounds (Line (Point p1) (Point p2)) = Bounds
-  { top:    Math.min p1.y p2.y
-  , left:   Math.min p1.x p2.x
-  , bottom: Math.max p1.y p2.y
-  , right:  Math.max p1.x p2.x
+  { top:    min p1.y p2.y
+  , left:   min p1.x p2.x
+  , bottom: max p1.y p2.y
+  , right:  max p1.x p2.x
   }
 shapeBounds (Text (Point { x, y }) _) = Bounds
   { top:    y
@@ -80,23 +78,24 @@ shapeBounds (Text (Point { x, y }) _) = Bounds
   , bottom: y
   , right:  x
   }
+shapeBounds (Clipped picture) = bounds picture
 
 union :: Bounds -> Bounds -> Bounds
 union (Bounds b1) (Bounds b2) = Bounds
-  { top:    Math.min b1.top    b2.top
-  , left:   Math.min b1.left   b2.left
-  , bottom: Math.max b1.bottom b2.bottom
-  , right:  Math.max b1.right  b2.right
+  { top:    min b1.top    b2.top
+  , left:   min b1.left   b2.left
+  , bottom: max b1.bottom b2.bottom
+  , right:  max b1.right  b2.right
   }
 
 infixl 4 union as \/
 
 intersect :: Bounds -> Bounds -> Bounds
 intersect (Bounds b1) (Bounds b2) = Bounds
-  { top:    Math.max b1.top    b2.top
-  , left:   Math.max b1.left   b2.left
-  , bottom: Math.min b1.bottom b2.bottom
-  , right:  Math.min b1.right  b2.right
+  { top:    max b1.top    b2.top
+  , left:   max b1.left   b2.left
+  , bottom: min b1.bottom b2.bottom
+  , right:  min b1.right  b2.right
   }
 
 infixl 4 intersect as /\
@@ -122,6 +121,14 @@ bounds = foldl combine emptyBounds
   where
   combine :: Bounds -> Shape -> Bounds
   combine b shape = shapeBounds shape \/ b
+
+makeCircle :: forall r. { x :: Number, y :: Number | r } -> Number -> Shape
+makeCircle { x, y } radius = (Circle <<< Point $ { x, y }) radius
+
+area :: Shape -> Number
+area (Circle c r)      = pi * r `pow` 2.0
+area (Rectangle c w h) = w * h
+area _                 = 0.0
 
 leftMost :: Point -> Point -> Point
 leftMost pa@(Point a) pb@(Point b)
@@ -152,8 +159,8 @@ scaleShape (Line a b)        =
     (Point { x: lx, y: ly }) = leftMost a b
     (Point { y: ty }) = topMost a b
     (Point { y: by }) = bottomMost a b
-    xDiff = Math.abs (rx - lx)
-    yDiff = Math.abs (ty - by)
+    xDiff = abs (rx - lx)
+    yDiff = abs (ty - by)
     cx = lx + (xDiff / 2.0)
     cy = by + (yDiff / 2.0)
     nrx = cx + ((rx - cx) * 2.0)
