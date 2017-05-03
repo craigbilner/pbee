@@ -11,9 +11,8 @@ data Point = Point
   , y :: Number
   }
 
-showPoint :: Point -> String
-showPoint (Point { x, y }) =
-  "(" <> show x <> ", " <> show y <> ")"
+instance showPoint :: Show Point where
+  show (Point { x, y }) = "(" <> show x <> ", " <> show y <> ")"
 
 data Shape
   = Circle Point Number
@@ -26,13 +25,13 @@ type Picture = Array Shape
 
 instance showShape :: Show Shape where
   show (Circle c r) =
-    "Circle [center: " <> showPoint c <> ", radius: " <> show r <> "]"
+    "Circle [center: " <> show c <> ", radius: " <> show r <> "]"
   show (Rectangle c w h) =
-    "Rectangle [center: " <> showPoint c <> ", width: " <> show w <> ", height: " <> show h <> "]"
+    "Rectangle [center: " <> show c <> ", width: " <> show w <> ", height: " <> show h <> "]"
   show (Line start end) =
-    "Line [start: " <> showPoint start <> ", end: " <> showPoint end <> "]"
+    "Line [start: " <> show start <> ", end: " <> show end <> "]"
   show (Text loc text) =
-    "Text [location: " <> showPoint loc <> ", text: " <> show text <> "]"
+    "Text [location: " <> show loc <> ", text: " <> show text <> "]"
   show (Clipped picture) = foldr (<>) "" $ map show picture
 
 showPicture :: Picture -> Array String

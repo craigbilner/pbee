@@ -1,9 +1,14 @@
 module Main where
 
 import Prelude
-import Control.Monad.Eff (Eff)
-import Control.Monad.Eff.Console (CONSOLE, log)
 
-main :: forall e. Eff (console :: CONSOLE | e) Unit
-main = do
-  log "Hello sailor!"
+newtype Complex = Complex
+  { real      :: Number
+  , imaginary :: Number
+  }
+
+instance showComplex :: Show Complex where
+  show (Complex { real, imaginary }) = show real <> ", " <> show imaginary
+
+instance eqComplex :: Eq Complex where
+  eq (Complex { real: r1, imaginary: i1 }) (Complex { real: r2, imaginary: i2 }) = r1 == r2 && i1 == i2
