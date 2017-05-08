@@ -53,8 +53,3 @@ instance foldableOneMore :: Foldable f => Foldable (OneMore f) where
   foldl f acc (OneMore x xs) = foldl f (f acc x) xs
   foldr f acc (OneMore x xs) = foldr f (f x acc) xs
   foldMap f (OneMore x xs) = f x <> foldMap f xs
-
-class Monoid m <= Action m a where
-  act :: m -> a -> a
-
-instance monoidAction :: Action Monoid a where

@@ -5,6 +5,7 @@ module Data.Hashable
   , hash
   , hashEqual
   , combineHashes
+  , hasDuplicates
   ) where
 
 import Prelude
@@ -16,6 +17,7 @@ import Data.Function (on)
 import Data.Maybe (Maybe(..))
 import Data.String (toCharArray)
 import Data.Tuple (Tuple(..))
+import Data.Array (length, nubBy)
 
 newtype HashCode = HashCode Int
 
@@ -62,3 +64,8 @@ instance hashTuple :: (Hashable a, Hashable b) => Hashable (Tuple a b) where
 instance hashEither :: (Hashable a, Hashable b) => Hashable (Either a b) where
   hash (Left a) = hashCode 0 `combineHashes` hash a
   hash (Right b) = hashCode 1 `combineHashes` hash b
+
+hasDuplicates :: forall a. Hashable a => Array a -> Boolean
+hasDuplicates xs = length xs /= (length $ nubBy areEqual xs)
+  where
+    areEqual a b = a `hashEqual` b && a == b
