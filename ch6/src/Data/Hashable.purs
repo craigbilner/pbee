@@ -1,5 +1,6 @@
 module Data.Hashable
   ( HashCode
+  , Hour(..)
   , hashCode
   , class Hashable
   , hash
@@ -69,3 +70,11 @@ hasDuplicates :: forall a. Hashable a => Array a -> Boolean
 hasDuplicates xs = length xs /= (length $ nubBy areEqual xs)
   where
     areEqual a b = a `hashEqual` b && a == b
+
+newtype Hour = Hour Int
+
+instance eqHour :: Eq Hour where
+  eq (Hour n) (Hour m) = mod n 12 == mod m 12
+
+instance hashHour :: Hashable Hour where
+  hash (Hour n) = hashCode $ mod n 12
