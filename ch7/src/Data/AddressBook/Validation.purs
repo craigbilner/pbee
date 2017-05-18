@@ -36,14 +36,20 @@ phoneNumberRegex = makeRegex "^\\d{3}-\\d{3}-\\d{4}$"
 stateRegex :: Regex
 stateRegex = makeRegex "^[A-Z]{2}$"
 
+whitespace :: Regex
+whitespace = makeRegex "^\\s*$"
+
 matches :: String -> Regex -> String -> V Errors Unit
 matches _     regex value | test regex value = pure unit
 matches field _     _     = invalid ["Field '" <> field <> "' did not match the required format"]
 
+isWhitespace :: String -> String -> V Errors String
+isWhitespace field s = matches field whitespace s *> pure s
+
 validateAddress :: Address -> V Errors Address
 validateAddress (Address o) =
-  address <$> (nonEmpty "Street" o.street *> pure o.street)
-          <*> (nonEmpty "City"   o.city   *> pure o.city)
+  address <$> (isWhitespace "Street" o.street)
+          <*> (isWhitespace "City" o.city)
           <*> validateState o.state
 
 validateState :: String -> V Errors String
@@ -57,8 +63,8 @@ validatePhoneNumber (PhoneNumber o) =
 
 validatePerson :: Person -> V Errors Person
 validatePerson (Person o) =
-  person <$> (nonEmpty "First Name" o.firstName *> pure o.firstName)
-         <*> (nonEmpty "Last Name"  o.lastName  *> pure o.lastName)
+  person <$> (isWhitespace "First Name" o.firstName)
+         <*> (isWhitespace "Last Name"  o.lastName)
          <*> validateAddress o.homeAddress
          <*> (arrayNonEmpty "Phone Numbers" o.phones *> traverse validatePhoneNumber o.phones)
 
