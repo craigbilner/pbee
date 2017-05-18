@@ -1,6 +1,6 @@
 module Data.AddressBook.Validation where
 
-import Prelude
+import Prelude (Unit, (<>), pure, unit, (/=), show, (*>), (<$>), (<*>), ($))
 import Data.AddressBook (Address(..), Person(..), PhoneNumber(..), address, person, phoneNumber)
 import Data.Either (Either(..))
 import Data.String (length)
@@ -9,7 +9,7 @@ import Data.String.Regex.Flags (noFlags)
 import Data.Traversable (traverse)
 import Data.Validation.Semigroup (V, unV, invalid)
 import Partial.Unsafe (unsafePartial)
-import Data.Maybe (Maybe(..))
+import Data.Maybe (Maybe)
 
 type Errors = Array String
 
@@ -37,22 +37,22 @@ phoneNumberRegex = makeRegex "^\\d{3}-\\d{3}-\\d{4}$"
 stateRegex :: Regex
 stateRegex = makeRegex "^[A-Z]{2}$"
 
-whitespace :: Regex
-whitespace = makeRegex "^\\s*$"
+notWhitespace :: Regex
+notWhitespace = makeRegex "^[A-Za-z]+$"
 
 matches :: String -> Regex -> String -> V Errors Unit
 matches _     regex value | test regex value = pure unit
 matches field _     _     = invalid ["Field '" <> field <> "' did not match the required format"]
 
-isWhitespace :: String -> String -> V Errors String
-isWhitespace field s = matches field whitespace s *> pure s
+isNotWhitespace :: String -> String -> V Errors String
+isNotWhitespace field s = matches field notWhitespace s *> pure s
 
 validateAddress :: Maybe Address -> V Errors (Maybe Address)
 validateAddress = traverse validateAddress'
   where
     validateAddress' :: Address -> V Errors Address
-    validateAddress' (Address o) = address <$> (isWhitespace "Street" o.street)
-                                           <*> (isWhitespace "City" o.city)
+    validateAddress' (Address o) = address <$> (isNotWhitespace "Street" o.street)
+                                           <*> (isNotWhitespace "City" o.city)
                                            <*> validateState o.state
 
 validateState :: String -> V Errors String
@@ -66,8 +66,8 @@ validatePhoneNumber (PhoneNumber o) =
 
 validatePerson :: Person -> V Errors Person
 validatePerson (Person o) =
-  person <$> (isWhitespace "First Name" o.firstName)
-         <*> (isWhitespace "Last Name"  o.lastName)
+  person <$> (isNotWhitespace "First Name" o.firstName)
+         <*> (isNotWhitespace "Last Name"  o.lastName)
          <*> validateAddress o.homeAddress
          <*> (arrayNonEmpty "Phone Numbers" o.phones *> traverse validatePhoneNumber o.phones)
 
