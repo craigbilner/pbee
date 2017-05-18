@@ -9,6 +9,7 @@ import Data.String.Regex.Flags (noFlags)
 import Data.Traversable (traverse)
 import Data.Validation.Semigroup (V, unV, invalid)
 import Partial.Unsafe (unsafePartial)
+import Data.Maybe (Maybe(..))
 
 type Errors = Array String
 
@@ -46,11 +47,13 @@ matches field _     _     = invalid ["Field '" <> field <> "' did not match the 
 isWhitespace :: String -> String -> V Errors String
 isWhitespace field s = matches field whitespace s *> pure s
 
-validateAddress :: Address -> V Errors Address
-validateAddress (Address o) =
-  address <$> (isWhitespace "Street" o.street)
-          <*> (isWhitespace "City" o.city)
-          <*> validateState o.state
+validateAddress :: Maybe Address -> V Errors (Maybe Address)
+validateAddress = traverse validateAddress'
+  where
+    validateAddress' :: Address -> V Errors Address
+    validateAddress' (Address o) = address <$> (isWhitespace "Street" o.street)
+                                           <*> (isWhitespace "City" o.city)
+                                           <*> validateState o.state
 
 validateState :: String -> V Errors String
 validateState state = (lengthIs "State" 2 state *> pure state)
