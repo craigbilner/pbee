@@ -125,12 +125,12 @@ addressBook = createClass $ spec initialState \ctx -> do
                   ]
           ]
 
--- main :: Eff ( console :: CONSOLE
---             , dom :: DOM
---             ) Unit
--- main = void do
---   log "Rendering address book component"
---   let component = D.div [] [ createFactory addressBook unit ]
---   doc <- window >>= document
---   ctr <- getElementById (ElementId "main") (documentToNonElementParentNode (htmlDocumentToDocument doc))
---   render component (unsafePartial fromJust (toMaybe ctr))
+main :: Eff ( console :: CONSOLE
+            , dom :: DOM
+            ) Unit
+main = void do
+  log "Rendering address book component"
+  let component = D.div [] [ createFactory addressBook unit ]
+  doc <- window >>= document
+  ctr <- getElementById (ElementId "main") (documentToNonElementParentNode (htmlDocumentToDocument doc))
+  render component (unsafePartial fromJust ctr)
