@@ -16,7 +16,10 @@
     "purescript-react-dom": "^3.0.0",
     "purescript-strings": "^3.1.0",
     "purescript-validation": "^3.0.0",
-    "purescript-exceptions": "^3.0.0"
+    "purescript-exceptions": "^3.0.0",
+    "purescript-random": "^3.0.0",
+    "purescript-st": "^3.0.0",
+    "purescript-integers": "^3.0.0"
   },
   "devDependencies": {
     "purescript-psci-support": "^3.0.0"
