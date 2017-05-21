@@ -1,10 +1,13 @@
 module Misc where
 
-import Prelude (bind, pure, (+), ($), (<<<))
-import Data.Maybe (Maybe)
+import Prelude (bind, pure, (+), ($), (/), (<<<), discard)
+import Data.Maybe (Maybe(..))
 import Data.Array (tail, head, foldM, sort, nub)
 import Data.List.Types (List(..), (:))
 import Control.Monad (class Monad)
+import Control.Monad.Eff (Eff)
+import Control.Monad.Eff.Exception (EXCEPTION, Error, message, catchException, throw)
+import Control.Monad.Eff.Console (CONSOLE, log)
 
 third :: forall a. Array a -> Maybe a
 third xs = do
@@ -24,3 +27,17 @@ filterM f (x : xs) = do
   pure $ case isMatch of
     true  -> x : xs'
     false -> xs'
+
+safeDivide :: forall eff. Int -> Int -> Eff ( exception :: EXCEPTION | eff ) (Maybe Int)
+safeDivide _ 0 = throw "cannot divide"
+safeDivide a b = pure $ Just (a / b)
+
+printException :: forall eff. Error -> Eff ( console :: CONSOLE | eff ) (Maybe Int)
+printException e = do
+  log (message e)
+  pure Nothing
+
+doSafeDivide :: forall eff. Int -> Int -> Eff ( console :: CONSOLE | eff ) (Maybe Int)
+doSafeDivide a b = do
+    result <- catchException printException $ safeDivide a b
+    pure result
